@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% if includeAssets %}
+        {{ include("@FMElfinder/Elfinder/helper/assets_css.html.twig") }}
+    {% endif %}
+</head>
+<body>
+{% if includeAssets %}
+    {{ include("@FMElfinder/Elfinder/helper/assets_js.html.twig") }}
+{% endif %}
+<script type="text/javascript" src="{{ tinymce_popup_path }}"></script>
+<script type="text/javascript" charset="utf-8">
+
+    var FileBrowserDialogue = {
+        init: function () {},
+        mySubmit: function (URL) {
+
+            var win = tinyMCEPopup.getWindowArg('window');
+
+            // pass selected file path to TinyMCE
+            win.document.getElementById(tinyMCEPopup.getWindowArg('input')).value = URL;
+
+            // are we an image browser?
+            if (typeof(win.ImageDialog) != 'undefined') {
+                // update image dimensions
+                if (win.ImageDialog.getImageData) {
+                    win.ImageDialog.getImageData();
+                }
+                // update preview if necessary
+                if (win.ImageDialog.showPreviewImage) {
+                    win.ImageDialog.showPreviewImage(URL);
+                }
+            }
+
+            // close popup window
+            tinyMCEPopup.close();
+        }
+    };
+
+    tinyMCEPopup.onInit.add(FileBrowserDialogue.init, FileBrowserDialogue);
+
+    $().ready(function() {
+
+        var f = $('.elfinder').elfinder({
+            url : '{{ path('ef_connect', {'instance': instance, 'homeFolder': homeFolder }) }}',
+            lang : '{{ locale }}',
+            onlyMimes: {{ onlyMimes|raw }},
+            getfile : {
+                onlyURL : true,
+                multiple : false,
+                folders : false
+            },
+            getFileCallback : function(url) {
+                path = '/' + url.replace("{{ app.request.schemeAndHttpHost }}/", "");
+                FileBrowserDialogue.mySubmit(path);
+            }
+        }).elfinder('instance');
+    });
+</script>
+<div class="elfinder"></div>
+</body>
+</html>

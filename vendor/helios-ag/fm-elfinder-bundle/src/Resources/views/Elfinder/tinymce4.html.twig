@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+{% if includeAssets %}
+    {{ include("@FMElfinder/Elfinder/helper/assets_css.html.twig") }}
+{% endif %}
+</head>
+<body>
+{% if includeAssets %}
+    {{ include("@FMElfinder/Elfinder/helper/assets_js.html.twig") }}
+{% endif %}
+<script type="text/javascript" charset="utf-8">
+    var FileBrowserDialogue = {
+        init: function () {
+            // Here goes your code for setting your custom things onLoad.
+        },
+        mySubmit: function (URL) {
+            // pass selected file path to TinyMCE
+            top.tinymce.activeEditor.windowManager.getParams().setUrl(URL);
+
+            // close popup window
+            top.tinymce.activeEditor.windowManager.close();
+        }
+    };
+
+    $(document).ready(function() {
+        var elf = $('.elfinder').elfinder({
+            // set your elFinder options here
+            url: '{{ path('ef_connect', {'instance': instance, 'homeFolder': homeFolder }) }}',  // connector URL
+            lang : '{{ locale }}',
+            onlyMimes: {{ onlyMimes|raw }},
+            getFileCallback: function(file) { // editor callback
+                {% if relative_path %}
+                        FileBrowserDialogue.mySubmit('{{ pathPrefix }}'+file.url.replace("{{ app.request.schemeAndHttpHost }}/", "")); // pass selected file path to TinyMCE
+                {% else %}
+                    FileBrowserDialogue.mySubmit(file.url); // pass selected file path to TinyMCE
+                {% endif %}
+
+            }
+        }).elfinder('instance');
+    });
+</script>
+<div class="elfinder"></div>
+</body>
+</html>
